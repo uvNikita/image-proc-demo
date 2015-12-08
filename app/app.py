@@ -14,4 +14,8 @@ def create_app():
     app.config.from_object('config')
 
     app.register_blueprint(main)
+
+    if not os.path.exists(app.config['APP_DATA_FOLDER']):
+        os.makedirs(app.config['APP_DATA_FOLDER'])
+
     return app

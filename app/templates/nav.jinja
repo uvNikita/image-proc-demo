@@ -11,7 +11,7 @@
   </div>
   <div class="navbar-collapse collapse">
     <ul class="nav navbar-nav">
-      <li {% if url_for('main.index') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">{{ "Splash page" }}</a></li>
+      <li {% if url_for('main.index') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">{{ "Upload Image" }}</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li {% if url_for('main.about') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.about') }}"><i class="fa fa-book"></i> {{ "About site" }}</a></li>
