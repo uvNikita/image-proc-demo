@@ -30,6 +30,10 @@ def dft2(im):
     return fp.fft(fp.fft(im, axis=0), axis=1)
 
 
+def idft2(im):
+    return fp.ifft(fp.ifft(im, axis=0), axis=1)
+
+
 def showfft(fft):
     return np.log(1 + fft)
 
