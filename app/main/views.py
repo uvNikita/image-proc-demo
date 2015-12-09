@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 from scipy import ndimage
 from scipy import fftpack as fp
 from matplotlib import pyplot
@@ -15,7 +17,7 @@ main = Blueprint('main', __name__, template_folder='templates')
 
 VALID_EXTENSIONS = {'png', 'jpg'}
 
-IMAGE_TYPES = {'origin', 'fft'}
+IMAGE_TYPES = {'origin', 'fft', 'fft-real', 'fft-imag'}
 
 
 @main.route('/')
@@ -62,15 +64,20 @@ def get_image():
 @check_image
 def fourier():
     if request.method == 'POST':
-        image = ndimage.imread(get_no_image_path())
-        dft_res = dft2(image)
+        image = ndimage.imread(get_image_path())
+        dft_res = fp.fftshift(dft2(image))
 
-        pyplot.imshow(showfft(fp.fftshift(dft_res)))
+        pyplot.imshow(showfft(abs(dft_res)))
         pyplot.savefig(get_image_path(type='fft'))
 
+        pyplot.imshow(showfft(np.real(dft_res)))
+        pyplot.savefig(get_image_path(type='fft-real'))
+
+        pyplot.imshow(showfft(np.imag(dft_res)))
+        pyplot.savefig(get_image_path(type='fft-imag'))
+
         return redirect(url_for('main.fourier'))
-    fourier_result = get_image_url(type='fft')
-    return render_template('main/fourier.jinja', fourier_result=fourier_result)
+    return render_template('main/fourier.jinja')
 
 
 @main.route('/about')

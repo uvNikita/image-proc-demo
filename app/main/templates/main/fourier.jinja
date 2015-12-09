@@ -11,9 +11,27 @@
   </form>
   </p>
 
-  <p>
-    Fourier result
-    <img class="img-fluid plot" src="{{ fourier_result }}"/>
-  </p>
+  <div class="row">
+    <div class="col-md-4">
+      <figure>
+        <img class="img-fluid plot" src="{{ get_image_url(type='fft') }}"/>
+        <figcaption>Absolute</figcaption>
+      </figure>
+    </div>
+
+    <div class="col-md-4">
+      <figure>
+        <img class="img-fluid plot" src="{{ get_image_url(type='fft-real') }}"/>
+        <figcaption>Real</figcaption>
+      </figure>
+    </div>
+
+    <div class="col-md-4">
+      <figure>
+        <img class="img-fluid plot" src="{{ get_image_url(type='fft-imag') }}"/>
+        <figcaption>Imaginary</figcaption>
+      </figure>
+    </div>
+  </div>
 
 {% endblock %}

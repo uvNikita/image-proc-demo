@@ -31,7 +31,7 @@ def dft2(im):
 
 
 def showfft(fft):
-    return np.log(1 + abs(fft))
+    return np.log(1 + fft)
 
 
 def check_image(func):
