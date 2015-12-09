@@ -1,11 +1,9 @@
 {% extends "base.jinja" %}
-{% set page_title = 'Upload image' %}
+{% set page_title = 'Upload Image' %}
 
 {% block content %}
   <h3>Upload new File</h3>
-  <p>
-    <img src="{{ image_url }}"/>
-  </p>
+  <img class="img-fluid picture" src="{{ image_url }}"/>
 
   <p>
     <form action="" method=post enctype=multipart/form-data>

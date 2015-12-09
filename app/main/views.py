@@ -1,12 +1,21 @@
 import os
-import uuid
+
+from scipy import ndimage
+from scipy import fftpack as fp
+from matplotlib import pyplot
 
 from flask import Blueprint, render_template, url_for, send_file
-from flask import redirect, request
+from flask import redirect, request, g, current_app
 
-from .util import get_image_path, get_no_image_path
+from .util import get_image_path, get_no_image_path, clear_data_folder
+from .util import get_image_url, dft2, showfft, check_image
 
 main = Blueprint('main', __name__, template_folder='templates')
+
+
+VALID_EXTENSIONS = {'png', 'jpg'}
+
+IMAGE_TYPES = {'origin', 'fft'}
 
 
 @main.route('/')
@@ -18,21 +27,50 @@ def index():
 def upload():
     if request.method == 'POST':
         image = request.files['file']
-        if image and image.filename.endswith('.png'):
-            image.save(get_image_path('image'))
-        return redirect(url_for('main.upload'))
-    image_url = url_for('main.get_image', random=uuid.uuid4())
-    return render_template('main/upload.jinja', image_url=image_url)
+        if image:
+            _, ext = os.path.splitext(image.filename)
+            ext = ext[1:]
+            if ext in VALID_EXTENSIONS:
+                clear_data_folder()
+
+                response = current_app.make_response(redirect(url_for('.upload')))
+                g.current_image = ext
+                response.set_cookie('current_image', g.current_image)
+
+                image.save(get_image_path())
+                return response
+        return redirect(url_for('.upload'))
+    return render_template('main/upload.jinja', image_url=get_image_url())
 
 
 @main.route('/image')
 def get_image():
-    image_path = get_image_path('image')
+    type = request.args['type']
+
+    if type not in IMAGE_TYPES or not g.get('current_image'):
+        image_path = get_no_image_path()
+    else:
+        image_path = get_image_path(type=type)
 
     if not os.path.exists(image_path):
         image_path = get_no_image_path()
 
     return send_file(image_path, mimetype='image/gif')
+
+
+@main.route('/fourier', methods=['GET', 'POST'])
+@check_image
+def fourier():
+    if request.method == 'POST':
+        image = ndimage.imread(get_no_image_path())
+        dft_res = dft2(image)
+
+        pyplot.imshow(showfft(fp.fftshift(dft_res)))
+        pyplot.savefig(get_image_path(type='fft'))
+
+        return redirect(url_for('main.fourier'))
+    fourier_result = get_image_url(type='fft')
+    return render_template('main/fourier.jinja', fourier_result=fourier_result)
 
 
 @main.route('/about')

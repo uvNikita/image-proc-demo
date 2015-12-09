@@ -1,8 +1,9 @@
 import os
 
-from flask import Flask
+from flask import Flask, g, request
 
 from .main.views import main
+from .main.util import ensure_data_folder
 
 
 def create_app():
@@ -15,7 +16,10 @@ def create_app():
 
     app.register_blueprint(main)
 
-    if not os.path.exists(app.config['APP_DATA_FOLDER']):
-        os.makedirs(app.config['APP_DATA_FOLDER'])
+    @app.before_request
+    def get_current_image():
+        g.current_image = request.cookies.get('current_image')
+
+    ensure_data_folder(app.config)
 
     return app

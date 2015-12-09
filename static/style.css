@@ -1,4 +1,7 @@
-img {
-    width:500px;
+img.picture {
     height:250px;
+}
+
+img.plot {
+    height:300px;
 }
