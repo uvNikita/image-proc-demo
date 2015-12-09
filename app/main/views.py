@@ -10,6 +10,7 @@ from PIL import Image
 
 from flask import Blueprint, render_template, url_for, send_file
 from flask import redirect, request, g, current_app
+from app.main.filters import filter_image, FILTERS
 
 from .util import get_image_path, get_no_image_path, clear_data_folder
 from .util import get_image_url, dft2, idft2, showfft, check_image
@@ -19,7 +20,7 @@ main = Blueprint('main', __name__, template_folder='templates')
 
 VALID_EXTENSIONS = {'png', 'jpg'}
 
-IMAGE_TYPES = {'origin', 'fft', 'fft-real', 'fft-imag', 'rec', 'ref'}
+IMAGE_TYPES = {'origin', 'fft', 'fft-real', 'fft-imag', 'rec', 'ref', 'filtered'}
 
 
 @main.route('/')
@@ -42,7 +43,12 @@ def upload():
                 g.current_image = ext
                 response.set_cookie('current_image', g.current_image)
 
-                image.convert('L').save(get_image_path())
+                image = image.convert('L')
+                image.save(get_image_path())
+
+                pyplot.imshow(image, cmap=cm.Greys_r)
+                pyplot.savefig(get_image_path(type='ref'))
+
                 return response
         return redirect(url_for('.upload'))
     return render_template('main/upload.jinja', image_url=get_image_url())
@@ -90,14 +96,28 @@ def inv_fourier():
         image = ndimage.imread(get_image_path())
         rec_image = idft2(dft2(image))
 
-        pyplot.imshow(image, cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='ref'))
-
         pyplot.imshow(abs(rec_image), cmap=cm.Greys_r)
         pyplot.savefig(get_image_path(type='rec'))
 
         return redirect(url_for('.inv_fourier'))
     return render_template('main/inv_fourier.jinja')
+
+
+@main.route('/filters', methods=['GET', 'POST'])
+@check_image
+def filters():
+    if request.method == 'POST':
+        filter_type = request.form['filter_type']
+        cutoff = float(request.form['cutoff'])
+
+        image = ndimage.imread(get_image_path())
+
+        filter = FILTERS[filter_type]
+        pyplot.imshow(filter_image(image, filter, cutoff=cutoff), cmap=cm.Greys_r)
+        pyplot.savefig(get_image_path(type='filtered'))
+        return redirect(url_for('.filters', **request.form))
+
+    return render_template('main/filters.jinja', filters=FILTERS.values())
 
 
 @main.route('/about')

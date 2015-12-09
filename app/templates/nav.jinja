@@ -14,6 +14,7 @@
       <li {% if url_for('main.index') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">{{ "Upload Image" }}</a></li>
       <li {% if url_for('main.fourier') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.fourier') }}">{{ "Fourier Transform" }}</a></li>
       <li {% if url_for('main.inv_fourier') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.inv_fourier') }}">{{ "Innverse Fourier Transform" }}</a></li>
+      <li {% if url_for('main.filters') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.filters') }}">{{ "Filters" }}</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li {% if url_for('main.about') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.about') }}"><i class="fa fa-book"></i> {{ "About site" }}</a></li>
