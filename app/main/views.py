@@ -23,7 +23,8 @@ VALID_EXTENSIONS = {'png', 'jpg'}
 IMAGE_TYPES = {
     'origin', 'fft', 'fft-real', 'fft-imag',
     'rec', 'ref',
-    'filtered_low_pass', 'filtered_high_pass', 'filtered_band_pass',
+    'filtered_low_pass', 'filtered_high_pass',
+    'filtered_band_pass', 'filtered_band_reject',
 }
 
 
@@ -133,10 +134,15 @@ def band_pass():
     return process_filter('band_pass', ['cutoff', 'width'])
 
 
+@main.route('/band-reject', methods=['GET', 'POST'])
+@check_image
+def band_reject():
+    return process_filter('band_reject', ['cutoff', 'width'])
+
+
 def process_filter(filter_type, options):
     if request.method == 'POST':
         filter_name = request.form['filter_name']
-        print '*' * 100
         option_values = {
             option: float(request.form[option])
             for option in options
