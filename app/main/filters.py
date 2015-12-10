@@ -38,6 +38,25 @@ def low_pass_butterworth(d, cutoff, order):
     return 1.0 / (1 + (d / cutoff) ** (2 * order))
 
 
+def band_pass_ideal(d, cutoff, width):
+    if cutoff - width / 2.0 <= d <= cutoff + width / 2.0:
+        return 1
+    else:
+        return 0
+
+
+def band_pass_gauss(d, cutoff, width):
+    if d == 0:
+        return 0
+    return np.exp(-((d ** 2 - cutoff ** 2)/(d * width)) ** 2)
+
+
+def band_pass_butterworth(d, cutoff, width, order):
+    if d == 0:
+        return 0
+    return 1 / (1 + ((d ** 2 - cutoff ** 2) / (d * width)) ** (2 * order))
+
+
 def distance(u, v, (M, N)):
     return sqrt((u - M / 2.0) ** 2 + (v - N / 2.0) ** 2)
 
@@ -64,4 +83,10 @@ HIGH_PASS_FILTERS = {
     'ideal': high_pass_ideal,
     'gauss': high_pass_gauss,
     'butterworth': high_pass_butterworth,
+}
+
+BAND_PASS_FILTERS = {
+    'ideal': band_pass_ideal,
+    'gauss': band_pass_gauss,
+    'butterworth': band_pass_butterworth,
 }

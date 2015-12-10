@@ -13,7 +13,7 @@ from flask import redirect, request, g, current_app
 
 from .util import get_image_path, get_no_image_path, clear_data_folder
 from .util import get_image_url, dft2, idft2, showfft, check_image
-from .filters import filter_image, LOW_PASS_FILTERS, HIGH_PASS_FILTERS
+from .filters import filter_image, LOW_PASS_FILTERS, HIGH_PASS_FILTERS, BAND_PASS_FILTERS
 
 main = Blueprint('main', __name__, template_folder='templates')
 
@@ -23,7 +23,7 @@ VALID_EXTENSIONS = {'png', 'jpg'}
 IMAGE_TYPES = {
     'origin', 'fft', 'fft-real', 'fft-imag',
     'rec', 'ref',
-    'filtered_low_pass', 'filtered_high_pass',
+    'filtered_low_pass', 'filtered_high_pass', 'filtered_band_pass',
 }
 
 
@@ -80,14 +80,21 @@ def fourier():
         image = ndimage.imread(get_image_path())
         dft_res = fp.fftshift(dft2(image))
 
-        pyplot.imshow(showfft(abs(dft_res)), cmap=cm.Greys_r)
+        x_max = dft_res.shape[0]/2
+        y_max = dft_res.shape[1]/2
+        dims = [-x_max, x_max, -y_max, y_max]
+
+        pyplot.imshow(showfft(abs(dft_res)), cmap=cm.Greys_r, extent=dims)
         pyplot.savefig(get_image_path(type='fft'))
+        pyplot.close()
 
-        pyplot.imshow(showfft(np.real(dft_res)), cmap=cm.Greys_r)
+        pyplot.imshow(showfft(np.real(dft_res)), cmap=cm.Greys_r, extent=dims)
         pyplot.savefig(get_image_path(type='fft-real'))
+        pyplot.close()
 
-        pyplot.imshow(showfft(np.imag(dft_res)), cmap=cm.Greys_r)
+        pyplot.imshow(showfft(np.imag(dft_res)), cmap=cm.Greys_r, extent=dims)
         pyplot.savefig(get_image_path(type='fft-imag'))
+        pyplot.close()
 
         return redirect(url_for('.fourier'))
     return render_template('main/fourier.jinja')
@@ -102,6 +109,7 @@ def inv_fourier():
 
         pyplot.imshow(abs(rec_image), cmap=cm.Greys_r)
         pyplot.savefig(get_image_path(type='rec'))
+        pyplot.close()
 
         return redirect(url_for('.inv_fourier'))
     return render_template('main/inv_fourier.jinja')
@@ -149,6 +157,29 @@ def high_pass():
         return redirect(url_for('.high_pass', **request.form))
 
     return render_template('main/high_pass.jinja')
+
+
+@main.route('/band-pass', methods=['GET', 'POST'])
+@check_image
+def band_pass():
+    if request.method == 'POST':
+        filter_type = request.form['filter_type']
+        cutoff = float(request.form['cutoff'])
+        width = float(request.form['width'])
+        order = int(request.form['order'])
+
+        options = {'cutoff': cutoff, 'width': width}
+        if filter_type == 'butterworth':
+            options['order'] = order
+
+        image = ndimage.imread(get_image_path())
+
+        filter_func = BAND_PASS_FILTERS[filter_type]
+        pyplot.imshow(filter_image(image, filter_func, options), cmap=cm.Greys_r)
+        pyplot.savefig(get_image_path(type='filtered_band_pass'))
+        return redirect(url_for('.band_pass', **request.form))
+
+    return render_template('main/band_pass.jinja')
 
 
 @main.route('/about')
