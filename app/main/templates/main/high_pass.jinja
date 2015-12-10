@@ -1,7 +1,7 @@
 {% from 'main/util.jinja' import filter_type_select %}
 
 {% extends "base.jinja" %}
-{% set page_title = 'Low Pass' %}
+{% set page_title = 'High Pass' %}
 
 
 {% block content %}
@@ -24,7 +24,7 @@
 
     <div class="col-md-4">
       <figure>
-        <img class="img-fluid plot" src="{{ get_image_url(type='filtered_low_pass') }}"/>
+        <img class="img-fluid plot" src="{{ get_image_url(type='filtered_high_pass') }}"/>
         <figcaption>Filtered</figcaption>
       </figure>
     </div>

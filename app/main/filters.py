@@ -1,5 +1,4 @@
 from math import sqrt
-from collections import namedtuple
 
 import numpy as np
 from scipy import fftpack as fp
@@ -7,14 +6,21 @@ from scipy import fftpack as fp
 from .util import dft2, idft2
 
 
-Filter = namedtuple('Filter', ['id', 'name', 'func'])
-
-
-def high_pass(d, cutoff):
+def high_pass_ideal(d, cutoff):
     if d >= cutoff:
         return 1
     else:
         return 0
+
+
+def high_pass_gauss(d, cutoff):
+    return 1 - np.exp(-(d ** 2) / (2 * cutoff ** 2))
+
+
+def high_pass_butterworth(d, cutoff, order):
+    if d == 0:
+        return 0
+    return 1.0 / (1 + (cutoff / d) ** (2 * order))
 
 
 def low_pass_ideal(d, cutoff):
@@ -29,7 +35,7 @@ def low_pass_gauss(d, cutoff):
 
 
 def low_pass_butterworth(d, cutoff, order):
-    return 1 / (1 + (d / cutoff) ** (2 * order))
+    return 1.0 / (1 + (d / cutoff) ** (2 * order))
 
 
 def distance(u, v, (M, N)):
@@ -52,4 +58,10 @@ LOW_PASS_FILTERS = {
     'ideal': low_pass_ideal,
     'gauss': low_pass_gauss,
     'butterworth': low_pass_butterworth,
+}
+
+HIGH_PASS_FILTERS = {
+    'ideal': high_pass_ideal,
+    'gauss': high_pass_gauss,
+    'butterworth': high_pass_butterworth,
 }

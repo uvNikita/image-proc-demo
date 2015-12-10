@@ -10,10 +10,10 @@ from PIL import Image
 
 from flask import Blueprint, render_template, url_for, send_file
 from flask import redirect, request, g, current_app
-from app.main.filters import filter_image, LOW_PASS_FILTERS
 
 from .util import get_image_path, get_no_image_path, clear_data_folder
 from .util import get_image_url, dft2, idft2, showfft, check_image
+from .filters import filter_image, LOW_PASS_FILTERS, HIGH_PASS_FILTERS
 
 main = Blueprint('main', __name__, template_folder='templates')
 
@@ -23,7 +23,7 @@ VALID_EXTENSIONS = {'png', 'jpg'}
 IMAGE_TYPES = {
     'origin', 'fft', 'fft-real', 'fft-imag',
     'rec', 'ref',
-    'filtered_low_pass',
+    'filtered_low_pass', 'filtered_high_pass',
 }
 
 
@@ -127,6 +127,28 @@ def low_pass():
         return redirect(url_for('.low_pass', **request.form))
 
     return render_template('main/low_pass.jinja')
+
+
+@main.route('/high-pass', methods=['GET', 'POST'])
+@check_image
+def high_pass():
+    if request.method == 'POST':
+        filter_type = request.form['filter_type']
+        cutoff = float(request.form['cutoff'])
+        order = int(request.form['order'])
+
+        options = {'cutoff': cutoff}
+        if filter_type == 'butterworth':
+            options['order'] = order
+
+        image = ndimage.imread(get_image_path())
+
+        filter_func = HIGH_PASS_FILTERS[filter_type]
+        pyplot.imshow(filter_image(image, filter_func, options), cmap=cm.Greys_r)
+        pyplot.savefig(get_image_path(type='filtered_high_pass'))
+        return redirect(url_for('.high_pass', **request.form))
+
+    return render_template('main/high_pass.jinja')
 
 
 @main.route('/about')
