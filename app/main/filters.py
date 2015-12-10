@@ -90,3 +90,10 @@ BAND_PASS_FILTERS = {
     'gauss': band_pass_gauss,
     'butterworth': band_pass_butterworth,
 }
+
+
+FILTERS = {
+    'low_pass': LOW_PASS_FILTERS,
+    'high_pass': HIGH_PASS_FILTERS,
+    'band_pass': BAND_PASS_FILTERS,
+}

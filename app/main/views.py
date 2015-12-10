@@ -13,7 +13,7 @@ from flask import redirect, request, g, current_app
 
 from .util import get_image_path, get_no_image_path, clear_data_folder
 from .util import get_image_url, dft2, idft2, showfft, check_image
-from .filters import filter_image, LOW_PASS_FILTERS, HIGH_PASS_FILTERS, BAND_PASS_FILTERS
+from .filters import filter_image, FILTERS
 
 main = Blueprint('main', __name__, template_folder='templates')
 
@@ -118,68 +118,40 @@ def inv_fourier():
 @main.route('/low-pass', methods=['GET', 'POST'])
 @check_image
 def low_pass():
-    if request.method == 'POST':
-        filter_type = request.form['filter_type']
-        cutoff = float(request.form['cutoff'])
-        order = int(request.form['order'])
-
-        options = {'cutoff': cutoff}
-        if filter_type == 'butterworth':
-            options['order'] = order
-
-        image = ndimage.imread(get_image_path())
-
-        filter_func = LOW_PASS_FILTERS[filter_type]
-        pyplot.imshow(filter_image(image, filter_func, options), cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='filtered_low_pass'))
-        return redirect(url_for('.low_pass', **request.form))
-
-    return render_template('main/low_pass.jinja')
+    return process_filter('low_pass', ['cutoff'])
 
 
 @main.route('/high-pass', methods=['GET', 'POST'])
 @check_image
 def high_pass():
-    if request.method == 'POST':
-        filter_type = request.form['filter_type']
-        cutoff = float(request.form['cutoff'])
-        order = int(request.form['order'])
-
-        options = {'cutoff': cutoff}
-        if filter_type == 'butterworth':
-            options['order'] = order
-
-        image = ndimage.imread(get_image_path())
-
-        filter_func = HIGH_PASS_FILTERS[filter_type]
-        pyplot.imshow(filter_image(image, filter_func, options), cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='filtered_high_pass'))
-        return redirect(url_for('.high_pass', **request.form))
-
-    return render_template('main/high_pass.jinja')
+    return process_filter('high_pass', ['cutoff'])
 
 
 @main.route('/band-pass', methods=['GET', 'POST'])
 @check_image
 def band_pass():
-    if request.method == 'POST':
-        filter_type = request.form['filter_type']
-        cutoff = float(request.form['cutoff'])
-        width = float(request.form['width'])
-        order = int(request.form['order'])
+    return process_filter('band_pass', ['cutoff', 'width'])
 
-        options = {'cutoff': cutoff, 'width': width}
-        if filter_type == 'butterworth':
-            options['order'] = order
+
+def process_filter(filter_type, options):
+    if request.method == 'POST':
+        filter_name = request.form['filter_name']
+        print '*' * 100
+        option_values = {
+            option: float(request.form[option])
+            for option in options
+        }
+        if filter_name == 'butterworth':
+            option_values['order'] = int(request.form['order'])
 
         image = ndimage.imread(get_image_path())
 
-        filter_func = BAND_PASS_FILTERS[filter_type]
-        pyplot.imshow(filter_image(image, filter_func, options), cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='filtered_band_pass'))
-        return redirect(url_for('.band_pass', **request.form))
+        filter_func = FILTERS[filter_type][filter_name]
+        pyplot.imshow(filter_image(image, filter_func, option_values), cmap=cm.Greys_r)
+        pyplot.savefig(get_image_path(type='filtered_{}'.format(filter_type)))
+        return redirect(url_for('.{}'.format(filter_type), **request.form))
 
-    return render_template('main/band_pass.jinja')
+    return render_template('main/filter.jinja', filter_type=filter_type, options=options)
 
 
 @main.route('/about')
