@@ -1,16 +1,16 @@
+{% from 'main/util.jinja' import filter_type_select %}
+
 {% extends "base.jinja" %}
 {% set page_title = 'Filters' %}
 
 
 {% block content %}
   <form action="" method=post enctype=multipart/form-data id="filter_form">
-      <select name="filter_type" form="filter_form">
-        {% for filter_type in ['ideal', 'gauss', 'butterworth'] %}
-          <option {% if request.args.get('filter_type') == filter_type %} selected="selected"{% endif %} value="{{ filter_type }}">{{ filter_type.capitalize() }}</option>
-        {% endfor %}
-      </select>
-      <input type="number" step="0.01" name="cutoff" value="{{ request.args.get('cutoff', 0) }}">
-    <input type="number" name="order" value="{{ request.args.get('order', 0) }}">
+      {{ filter_type_select() }}
+      Cutt off:
+      <input type="number" step="0.01" name="cutoff" value="{{ request.args.get('cutoff', 0) }}"/>
+      Order:
+      <input type="number" name="order" value="{{ request.args.get('order', 0) }}">
       <input type=submit value=Filter>
   </form>
 

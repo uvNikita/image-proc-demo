@@ -1,0 +1,7 @@
+{% macro filter_type_select() -%}
+  <select name="filter_type" form="filter_form">
+    {% for filter_type in ['ideal', 'gauss', 'butterworth'] %}
+      <option {% if request.args.get('filter_type') == filter_type %} selected="selected"{% endif %} value="{{ filter_type }}">{{ filter_type.capitalize() }}</option>
+    {% endfor %}
+  </select>
+{%- endmacro %}
