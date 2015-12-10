@@ -77,8 +77,8 @@ def fourier():
         image = ndimage.imread(get_image_path())
         dft_res = fp.fftshift(dft2(image))
 
-        x_max = dft_res.shape[0]/2
-        y_max = dft_res.shape[1]/2
+        x_max = dft_res.shape[1]/2
+        y_max = dft_res.shape[0]/2
         dims = [-x_max, x_max, -y_max, y_max]
 
         pyplot.imshow(showfft(abs(dft_res)), cmap=cm.Greys_r, extent=dims)
