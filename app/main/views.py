@@ -21,8 +21,7 @@ main = Blueprint('main', __name__, template_folder='templates')
 VALID_EXTENSIONS = {'png', 'jpg'}
 
 IMAGE_TYPES = {
-    'origin', 'fft', 'fft-real', 'fft-imag',
-    'rec', 'ref',
+    'origin', 'fft', 'fft-real', 'fft-imag', 'rec',
     'filtered_low_pass', 'filtered_high_pass',
     'filtered_band_pass', 'filtered_band_reject',
 }
@@ -50,9 +49,6 @@ def upload():
 
                 image = image.convert('L')
                 image.save(get_image_path())
-
-                pyplot.imshow(image, cmap=cm.Greys_r)
-                pyplot.savefig(get_image_path(type='ref'))
 
                 return response
         return redirect(url_for('.upload'))
@@ -108,9 +104,8 @@ def inv_fourier():
         image = ndimage.imread(get_image_path())
         rec_image = idft2(dft2(image))
 
-        pyplot.imshow(abs(rec_image), cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='rec'))
-        pyplot.close()
+        im = Image.fromarray(rec_image.astype(np.uint8))
+        im.save(get_image_path(type='rec'))
 
         return redirect(url_for('.inv_fourier'))
     return render_template('main/inv_fourier.jinja')
@@ -153,8 +148,11 @@ def process_filter(filter_type, options):
         image = ndimage.imread(get_image_path())
 
         filter_func = FILTERS[filter_type][filter_name]
-        pyplot.imshow(filter_image(image, filter_func, option_values), cmap=cm.Greys_r)
-        pyplot.savefig(get_image_path(type='filtered_{}'.format(filter_type)))
+
+        image_filtered = filter_image(image, filter_func, option_values)
+        im = Image.fromarray(image_filtered.astype(np.uint8))
+        im.save(get_image_path(type='filtered_{}'.format(filter_type)))
+
         return redirect(url_for('.{}'.format(filter_type), **request.form))
 
     return render_template('main/filter.jinja', filter_type=filter_type, options=options)
