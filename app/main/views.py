@@ -14,7 +14,7 @@ from flask import redirect, request, g, current_app
 from .util import get_image_path, get_no_image_path, clear_data_folder
 from .util import get_image_url, check_image
 from .filters import filter_image, FILTERS
-from ..util_math import dft2, idft2, showfft
+from ..util_math import dft2, idft2, showfft, image_diff
 from ..compression import compress_dft, compress_dct
 
 main = Blueprint('main', __name__, template_folder='templates')
@@ -103,15 +103,22 @@ def fourier():
 @main.route('/inv-fourier', methods=['GET', 'POST'])
 @check_image
 def inv_fourier():
+    orig_im = ndimage.imread(get_image_path())
+    if os.path.exists(get_image_path(type='rec')):
+        rec_im = ndimage.imread(get_image_path(type='rec'))
+        diff = image_diff(orig_im, rec_im)
+    else:
+        diff = 0
+
     if request.method == 'POST':
         image = ndimage.imread(get_image_path())
-        rec_image = idft2(dft2(image))
 
-        im = Image.fromarray(rec_image.astype(np.uint8))
-        im.save(get_image_path(type='rec'))
+        rec_im = Image.fromarray(idft2(dft2(image)).astype(np.uint8))
+
+        rec_im.save(get_image_path(type='rec'))
 
         return redirect(url_for('.inv_fourier'))
-    return render_template('main/inv_fourier.jinja')
+    return render_template('main/inv_fourier.jinja', diff=diff)
 
 
 @main.route('/low-pass', methods=['GET', 'POST'])
@@ -141,6 +148,13 @@ def band_reject():
 @main.route('/compression', methods=['GET', 'POST'])
 @check_image
 def compression():
+    orig_im = ndimage.imread(get_image_path())
+    if os.path.exists(get_image_path(type='compressed')):
+        comp_im = ndimage.imread(get_image_path(type='compressed'))
+        diff = image_diff(orig_im, comp_im)
+    else:
+        diff = 0
+
     if request.method == 'POST':
         compression_method = request.form['compression_method']
         compression_level = float(request.form['compression_level'])
@@ -157,10 +171,18 @@ def compression():
         Image.fromarray(image_c.astype(np.uint8)).save(get_image_path(type='compressed'))
 
         return redirect(url_for('.compression', **request.form))
-    return render_template('main/compression.jinja')
+    return render_template('main/compression.jinja', diff=diff)
 
 
 def process_filter(filter_type, options):
+    filtered_image_path = get_image_path(type='filtered_{}'.format(filter_type))
+    orig_im = ndimage.imread(get_image_path())
+    if os.path.exists(filtered_image_path):
+        comp_im = ndimage.imread(filtered_image_path)
+        diff = image_diff(orig_im, comp_im)
+    else:
+        diff = 0
+
     if request.method == 'POST':
         filter_name = request.form['filter_name']
         option_values = {
@@ -176,11 +198,11 @@ def process_filter(filter_type, options):
 
         image_filtered = filter_image(image, filter_func, option_values)
         im = Image.fromarray(image_filtered.astype(np.uint8))
-        im.save(get_image_path(type='filtered_{}'.format(filter_type)))
+        im.save(filtered_image_path)
 
         return redirect(url_for('.{}'.format(filter_type), **request.form))
 
-    return render_template('main/filter.jinja', filter_type=filter_type, options=options)
+    return render_template('main/filter.jinja', filter_type=filter_type, options=options, diff=diff)
 
 
 @main.route('/about')

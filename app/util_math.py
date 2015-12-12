@@ -20,3 +20,8 @@ def idct2(im):
 
 def showfft(fft):
     return np.log(1 + fft)
+
+
+def image_diff(im1, im2):
+    # Mean Squared Error
+    return np.sum((im1 - im2) ** 2) / (im1.shape[0] * im1.shape[1])
