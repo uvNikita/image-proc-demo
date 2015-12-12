@@ -25,7 +25,7 @@ def compress_image(im, level, tr, itr):
     I = [np.unravel_index(i, imt.shape) for i in I]
     for i in I:
         new_imt[i] = imt[i]
-    return np.real(blockproc(new_imt, itr, block_size=8))
+    return np.abs(blockproc(new_imt, itr, block_size=8))
 
 compress_dct = partial(compress_image, tr=dct2, itr=idct2)
 compress_dft = partial(compress_image, tr=dft2, itr=idft2)
