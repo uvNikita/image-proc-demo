@@ -11,7 +11,7 @@
   </div>
   <div class="navbar-collapse collapse">
     <ul class="nav navbar-nav">
-      <li {% if url_for('main.index') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">{{ "Upload Image" }}</a></li>
+      <li {% if url_for('main.index') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">{{ "Upload" }}</a></li>
       <li {% if url_for('main.fourier') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.fourier') }}">{{ "Fourier Transform" }}</a></li>
       <li {% if url_for('main.inv_fourier') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.inv_fourier') }}">{{ "Innverse Fourier Transform" }}</a></li>
       <li {% if url_for('main.low_pass') == request.path %}class="active"{% endif %}><a href="{{ url_for('main.low_pass') }}">{{ "Low Pass" }}</a></li>
