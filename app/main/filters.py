@@ -3,7 +3,7 @@ from math import sqrt
 import numpy as np
 from scipy import fftpack as fp
 
-from .util import dft2, idft2
+from ..util_math import dft2, idft2
 
 
 # --- high pass filters ---

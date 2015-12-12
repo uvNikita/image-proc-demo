@@ -1,12 +1,7 @@
 import os
 import uuid
 import shutil
-
 from functools import wraps
-
-import numpy as np
-
-from scipy import fftpack as fp
 
 from flask import current_app, url_for, g, redirect
 
@@ -24,18 +19,6 @@ def get_image_url(name='image', type='origin'):
 
 def get_no_image_path():
     return os.path.join(current_app.static_folder, 'no-image.png')
-
-
-def dft2(im):
-    return fp.fft(fp.fft(im, axis=0), axis=1)
-
-
-def idft2(im):
-    return fp.ifft(fp.ifft(im, axis=0), axis=1)
-
-
-def showfft(fft):
-    return np.log(1 + fft)
 
 
 def check_image(func):

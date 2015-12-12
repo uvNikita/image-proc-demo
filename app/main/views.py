@@ -12,8 +12,10 @@ from flask import Blueprint, render_template, url_for, send_file
 from flask import redirect, request, g, current_app
 
 from .util import get_image_path, get_no_image_path, clear_data_folder
-from .util import get_image_url, dft2, idft2, showfft, check_image
+from .util import get_image_url, check_image
 from .filters import filter_image, FILTERS
+from ..util_math import dft2, idft2, showfft
+from ..compression import compress_dft, compress_dct
 
 main = Blueprint('main', __name__, template_folder='templates')
 
@@ -24,6 +26,7 @@ IMAGE_TYPES = {
     'origin', 'fft', 'fft-real', 'fft-imag', 'rec',
     'filtered_low_pass', 'filtered_high_pass',
     'filtered_band_pass', 'filtered_band_reject',
+    'compressed'
 }
 
 
@@ -133,6 +136,28 @@ def band_pass():
 @check_image
 def band_reject():
     return process_filter('band_reject', ['cutoff', 'width'])
+
+
+@main.route('/compression', methods=['GET', 'POST'])
+@check_image
+def compression():
+    if request.method == 'POST':
+        compression_method = request.form['compression_method']
+        compression_level = float(request.form['compression_level'])
+
+        if compression_method == 'dft':
+            compression_function = compress_dft
+        elif compression_method == 'dct':
+            compression_function = compress_dct
+        else:
+            return about(400)
+
+        image = ndimage.imread(get_image_path())
+        image_c = compression_function(image, compression_level)
+        Image.fromarray(image_c.astype(np.uint8)).save(get_image_path(type='compressed'))
+
+        return redirect(url_for('.compression', **request.form))
+    return render_template('main/compression.jinja')
 
 
 def process_filter(filter_type, options):
