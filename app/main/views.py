@@ -23,7 +23,8 @@ main = Blueprint('main', __name__, template_folder='templates')
 VALID_EXTENSIONS = {'png', 'jpg'}
 
 IMAGE_TYPES = {
-    'origin', 'fft', 'fft-real', 'fft-imag', 'rec',
+    'origin', 'rec',
+    'fft', 'fft-real', 'fft-imag', 'fft-phase',
     'filtered_low_pass', 'filtered_high_pass',
     'filtered_band_pass', 'filtered_band_reject',
     'compressed'
@@ -86,6 +87,10 @@ def fourier():
 
         pyplot.imshow(showfft(abs(dft_res)), cmap=cm.Greys_r, extent=dims)
         pyplot.savefig(get_image_path(type='fft'))
+        pyplot.close()
+
+        pyplot.imshow(np.angle(dft_res), cmap=cm.Greys_r, extent=dims)
+        pyplot.savefig(get_image_path(type='fft-phase'))
         pyplot.close()
 
         pyplot.imshow(showfft(np.real(dft_res)), cmap=cm.Greys_r, extent=dims)
